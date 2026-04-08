@@ -1206,8 +1206,20 @@ def local_tts(
 
                     logger.success(f"local tts succeeded: {voice_file}")
 
-                    # 尝试生成字幕（本地TTS不返回字幕时间轴，返回None）
-                    return None
+                    # 创建 SubMaker 对象用于返回音频时长
+                    sub_maker = SubMaker()
+                    # 获取音频时长（秒）
+                    try:
+                        audio_duration = get_audio_duration(voice_file)
+                    except:
+                        audio_duration = 10  # 默认10秒
+                    # 转换为 100 纳秒单位
+                    audio_duration_100ns = int(audio_duration * 10000000)
+                    # 创建简单的字幕（整个文本作为一个字幕）
+                    sub_maker.subs = [text]
+                    sub_maker.offset = [(0, audio_duration_100ns)]
+
+                    return sub_maker
                 else:
                     logger.error(f"failed to download audio: {audio_response.status_code}")
             else:
